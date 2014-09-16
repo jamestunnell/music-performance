@@ -1,0 +1,120 @@
+exe_name = File.basename(__FILE__)
+
+doc = <<DOCOPT
+Loads a music-transcription score from YAML file, and converts to MIDI file.
+
+Usage:
+  #{exe_name} <input> <output>
+  #{exe_name} -h | --help
+  #{exe_name} --version
+
+Options:
+  -h --help     Show this screen.
+  --version     Show version.
+
+DOCOPT
+
+require 'docopt'
+begin
+  require "pp"
+  args = Docopt::docopt(doc)
+  pp args
+rescue Docopt::Exit => e
+  puts e.message
+  exit
+end
+
+require 'yaml'
+require 'music-transcription'
+require 'midilib'
+include MIDI
+include Music
+
+module Music
+module Transcription
+  class Tempo
+    def usec_per_qnote
+      spn = 1.0 / self.notes_per_second
+      spqn = spn / 4.0
+      return (spqn * 1_000_000).to_i
+    end
+  end
+
+  class Note
+    QUARTER = Rational(1,4)
+    
+    p0 = Pitch.new(octave:-1,semitone:0)
+    note_nums = { p0 => 0 }
+    (1..127).each do |notenum|
+      p = p0 + Pitch.new(semitone:notenum)
+      note_nums[p] = notenum
+    end
+    MIDI_NOTENUMS = note_nums
+    
+    # compute number of pulses for note
+    def midi_delta ppqn
+      pulses = (self.duration / QUARTER) * ppqn
+      return pulses.round
+    end
+
+    def midi_notenums
+      pitches.map do |p|
+        MIDI_NOTENUMS[p]
+      end
+    end
+  end
+end
+end
+
+File.open(args["<input>"]) do |fin|
+  score = YAML.load(fin.read)
+  
+  seq = Sequence.new()
+  
+  # first track for the sequence holds time sig and tempo events
+  track0 = Track.new(seq)
+  seq.tracks << track0
+  start_tempo = score.tempo_profile.start_value
+  track0.events << Tempo.new(start_tempo.usec_per_qnote)
+  track0.events << MetaEvent.new(META_SEQ_NAME, 'Sequence Name')
+  
+  channel = 0
+  score.parts.each do |part_name,part|
+    # Track to hold part notes
+    track = Track.new(seq)
+    seq.tracks << track
+    
+    # Name the track and instrument
+    track.name = part_name
+    track.instrument = GM_PATCH_NAMES[0]
+    
+    # Add a volume controller event (optional).
+    track.events << Controller.new(channel, CC_VOLUME, 127)
+    
+    # Change to particular instrument sound
+    track.events << ProgramChange.new(channel, 1, 0)
+    
+    part.notes.each do |note|
+      # number of pulses for note
+      delta = note.midi_delta(seq.ppqn)
+      
+      notenums = note.midi_notenums
+      if notenums.empty?
+        # note is a rest
+        notenum = 0
+        velocity = 0
+        track.events << NoteOn.new(channel, notenum, velocity, 0)
+        track.events << NoteOff.new(channel, notenum, velocity, delta)
+      else
+        notenums.each do |notenum|
+          track.events << NoteOn.new(channel, notenum, 127, 0)
+          track.events << NoteOff.new(channel, notenum, 127, delta)
+        end
+      end
+    end
+    
+    channel += 1
+  end
+  
+  File.open(args['<output>'], 'wb'){ |fout| seq.write(fout) }
+end

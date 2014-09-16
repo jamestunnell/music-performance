@@ -1,0 +1,28 @@
+= music-performance
+
+* {Homepage}[https://github.com/jamestunnell/music-performance]
+* {Issues}[https://github.com/jamestunnell/music-performance/issues]
+* {Documentation}[http://rubydoc.info/gems/music-performance/frames]
+* {Email}[mailto:jamestunnell@gmail.com]
+
+== Description
+
+Classes for preparing a music score for computer performance (e.g. via MIDI).
+
+== Features
+
+== Examples
+
+  require 'music-performance'
+
+== Requirements
+
+== Install
+
+  $ gem install music-performance
+
+== Copyright
+
+Copyright (c) 2012 James Tunnell
+
+See LICENSE.txt for details.
