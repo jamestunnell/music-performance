@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 exe_name = File.basename(__FILE__)
 
 doc = <<DOCOPT
@@ -99,16 +101,23 @@ File.open(args["<input>"]) do |fin|
       delta = note.midi_delta(seq.ppqn)
       
       notenums = note.midi_notenums
-      if notenums.empty?
-        # note is a rest
+      case notenums.size
+      when 0 # note is a rest
         notenum = 0
         velocity = 0
         track.events << NoteOn.new(channel, notenum, velocity, 0)
         track.events << NoteOff.new(channel, notenum, velocity, delta)
-      else
+      when 1 # single pitch
+        track.events << NoteOn.new(channel, notenums[0], 127, 0)
+        track.events << NoteOff.new(channel, notenums[0], 127, delta)
+      else   # chord
         notenums.each do |notenum|
           track.events << NoteOn.new(channel, notenum, 127, 0)
-          track.events << NoteOff.new(channel, notenum, 127, delta)
+        end
+        
+        track.events << NoteOff.new(channel, notenums[0], 127, delta)
+        notenums[1..-1].each do |notenum|
+          track.events << NoteOff.new(channel, notenum, 127, 0)
         end
       end
     end
