@@ -6,6 +6,7 @@ doc = <<DOCOPT
 Loads a music-transcription score from YAML file, and converts to MIDI file.
 
 Usage:
+  #{exe_name} <input>
   #{exe_name} <input> <output>
   #{exe_name} -h | --help
   #{exe_name} --version
@@ -34,9 +35,13 @@ include Music
 
 module Music
 module Transcription
-  class Tempo
-    def usec_per_qnote
-      spn = 1.0 / self.notes_per_second
+  class Score
+    def start_notes_per_sec
+      (@start_tempo * @start_meter.beat_duration) / 60.0
+    end
+    
+    def start_usec_per_qnote
+      spn = 1.0 / self.start_notes_per_sec
       spqn = spn / 4.0
       return (spqn * 1_000_000).to_i
     end
@@ -68,16 +73,13 @@ module Transcription
 end
 end
 
-File.open(args["<input>"]) do |fin|
-  score = YAML.load(fin.read)
-  
+def make_midi_seq(score)
   seq = Sequence.new()
   
   # first track for the sequence holds time sig and tempo events
   track0 = Track.new(seq)
   seq.tracks << track0
-  start_tempo = score.tempo_profile.start_value
-  track0.events << Tempo.new(start_tempo.usec_per_qnote)
+  track0.events << Tempo.new(score.start_usec_per_qnote)
   track0.events << MetaEvent.new(META_SEQ_NAME, 'Sequence Name')
   
   channel = 0
@@ -125,5 +127,24 @@ File.open(args["<input>"]) do |fin|
     channel += 1
   end
   
-  File.open(args['<output>'], 'wb'){ |fout| seq.write(fout) }
+  return seq
+end
+
+fin_name = args["<input>"]
+File.open(fin_name) do |fin|
+  print "Reading file '#{fin_name}'..."
+  score = YAML.load(fin.read)
+  puts "complete"
+
+  print "Making MIDI sequence..."
+  seq = make_midi_seq(score)
+  puts "complete"  
+
+  fout_name = args["<output>"]
+  if fout_name.nil?
+    fout_name = "#{File.dirname(fin_name)}/#{File.basename(fin_name,File.extname(fin_name))}.mid"
+  end
+  print "Writing file '#{fout_name}'..."
+  File.open(fout_name, 'wb'){ |fout| seq.write(fout) }
+  puts "complete"
 end
