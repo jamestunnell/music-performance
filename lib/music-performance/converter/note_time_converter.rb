@@ -7,7 +7,7 @@ class NoteTimeConverter
   def initialize tempo_computer, beat_duration_computer, sample_rate
     @tempo_computer = tempo_computer
     @beat_duration_computer = beat_duration_computer
-    @sample_period = 1.0 / sample_rate
+    @sample_period = Rational(1,sample_rate)
   end
   
   def self.notes_per_second tempo, beat_duration
