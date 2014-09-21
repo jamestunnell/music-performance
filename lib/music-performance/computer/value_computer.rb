@@ -1,30 +1,23 @@
 module Music
 module Performance
 
-# Compute the value of a Profile for any offset.
-# @author James Tunnell
-#
-# @!attribute [r] piecewise_function
-#   @return [PiecewiseFunction] A piecewise function that can calculate the 
-#                               value for any valid offset.
-#
+# Given a start value, and value changes, compute the value at any offset.
 class ValueComputer
   attr_reader :piecewise_function
 
-  def initialize setting_profile
+  def initialize start_value, value_changes = {}
     @piecewise_function = PiecewiseFunction.new
-    set_default_value setting_profile.start_value
+    set_default_value start_value
     
-    if setting_profile.value_changes.any?
-      setting_profile.value_changes.sort.each do |offset,change|
+    if value_changes.any?
+      value_changes.sort.each do |offset,change|
         
         case change
         when Music::Transcription::Change::Immediate
           add_immediate_change change, offset
         when Music::Transcription::Change::Gradual
-        #  add_linear_change change, offset
-        #when Transition::SIGMOID
-          add_sigmoid_change change, offset
+          add_linear_change change, offset
+        #  add_sigmoid_change change, offset
         end
         
       end
