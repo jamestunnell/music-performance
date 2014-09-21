@@ -10,8 +10,14 @@ class NoteTimeConverter
     @sample_period = 1.0 / sample_rate
   end
   
-  def notes_per_second tempo, beat_duration
-    (tempo * beat_duration) / 60.0
+  def self.notes_per_second tempo, beat_duration
+    (tempo * beat_duration) * Rational(1,60)
+  end
+  
+  def notes_per_second_at offset
+    tempo = @tempo_computer.value_at offset
+    beat_duration = @beat_duration_computer.value_at offset
+    return NoteTimeConverter.notes_per_second(tempo,beat_duration)
   end
   
   # Convert the given note duration to a time duration. Using the tempo computer
@@ -33,9 +39,7 @@ class NoteTimeConverter
     note = note_begin
     
     while note < note_end
-      tempo = @tempo_computer.value_at note
-      beat_duration = @beat_duration_computer.value_at note
-      notes_per_sec = notes_per_second(tempo, beat_duration)
+      notes_per_sec = notes_per_second_at note
       notes_per_sample = notes_per_sec * @sample_period
       
       if (note + notes_per_sample) > note_end
