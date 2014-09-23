@@ -27,6 +27,6 @@ DESCRIPTION
   gem.add_development_dependency 'pry'
   gem.add_development_dependency 'pry-nav'
   
-  gem.add_dependency 'music-transcription', '~> 0.7'
+  gem.add_dependency 'music-transcription', '~> 0.7.3'
   gem.add_dependency 'midilib', '~> 2.0'
 end

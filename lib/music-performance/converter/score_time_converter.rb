@@ -21,33 +21,29 @@ class ScoreTimeConverter
     @note_time_converter = NoteTimeConverter.new(
       tempo_computer, beat_duration_computer, sample_rate)
     @score = score
+    @note_time_map = make_note_time_map(gather_all_offsets)
   end
   
-  # Convert note-based offsets & durations to time-based. This eliminates
-  # the use of tempo and meter during performance, producing a TimeScore
-  # object.
-  def make_time_score
-    note_time_map = make_note_time_map(gather_all_offsets)
-    
+  # Convert note-based offsets & durations to time-based.
+  def convert_parts
     newparts = {}
     @score.parts.each do |name,part|
       offset = 0
       
       newnotes = part.notes.map do |note|
-        starttime = note_time_map[offset]
-        endtime = note_time_map[offset + note.duration]
+        starttime = @note_time_map[offset]
+        endtime = @note_time_map[offset + note.duration]
         offset += note.duration
         newnote = note.clone
         newnote.duration = endtime - starttime
-        
         newnote
       end
       
       new_dcs = Hash[
         part.dynamic_changes.map do |offset, change|
-          timeoffset = note_time_map[offset]
+          timeoffset = @note_time_map[offset]
           newchange = change.clone
-          newchange.duration = note_time_map[offset + change.duration]
+          newchange.duration = @note_time_map[offset + change.duration]
           
           [timeoffset,newchange]
         end
@@ -59,15 +55,17 @@ class ScoreTimeConverter
         dynamic_changes: new_dcs
       )
     end
-    
+    return newparts
+  end
+  
+  # Convert note-based offsets & durations to time-based.
+  def convert_program
     newsegments = @score.program.segments.map do |segment|
-      first = note_time_map[segment.first]
-      last = note_time_map[segment.last]
+      first = @note_time_map[segment.first]
+      last = @note_time_map[segment.last]
       first...last
     end
-    newprogram = Program.new(newsegments)
-    
-    TimeScore.new(newparts,newprogram)
+    Program.new(newsegments)
   end
   
   private
