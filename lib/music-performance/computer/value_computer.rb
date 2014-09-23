@@ -32,30 +32,22 @@ class ValueComputer
   
   # finds the minimum domain value
   def domain_min
-    MIN_OFFSET
+    -Float::INFINITY
   end
 
   # finds the maximum domain value
   def domain_max
-    MAX_OFFSET
+    Float::INFINITY
   end
 
   # finds the minimum domain value
   def self.domain_min
-    MIN_OFFSET
+    -Float::INFINITY
   end
 
   # finds the maximum domain value
   def self.domain_max
-    MAX_OFFSET
-  end
-
-  def plot_range x_range, x_step, title = "value computer plot over #{x_range}"
-    xy_data = {}
-    x_range.step(x_step).each do |x|
-      xy_data[x] = value_at(x)
-    end
-    SPCore::Plotter.plot_2d(title => xy_data)
+    Float::INFINITY
   end
 
   private

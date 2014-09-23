@@ -35,7 +35,7 @@ class NoteTimeConverter
   def time_elapsed note_begin, note_end
     raise ArgumentError "note end is less than note begin" if note_end < note_begin
     
-    time = 0.0
+    time = 0.to_r
     note = note_begin
     
     while note < note_end

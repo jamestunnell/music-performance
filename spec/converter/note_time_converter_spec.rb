@@ -84,12 +84,12 @@ describe NoteTimeConverter do
 
       it "should map offset 0.25 to time 0.5" do
         map = @converter.map_note_offsets_to_time_offsets [0.0, 0.25]
-        map[0.25].should eq(0.5)
+        map[0.25].should be_within(0.01).of(0.5)
       end
       
       it "should map offset 1.0 to time 2.0" do
         map = @converter.map_note_offsets_to_time_offsets [0.0, 1.0]
-        map[1.0].should eq(2.0)
+        map[1.0].should be_within(0.01).of(2.0)
       end
     end
   end
