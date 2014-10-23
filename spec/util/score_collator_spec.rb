@@ -4,9 +4,9 @@ describe ScoreCollator do
   describe '#collate_parts' do
     before :all do
       @part = Part.new(Dynamics::FF,
-        notes: [ Note::Quarter.new([C2]),
-          Note::Half.new([D2]),
-          Note::Half.new([E2])
+        notes: [ Note.quarter([C2]),
+          Note.half([D2]),
+          Note.half([E2])
       ])
     end
     

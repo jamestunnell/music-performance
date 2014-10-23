@@ -104,7 +104,7 @@ class ScoreCollator
           cur_offset = seg.last
         end
         
-        cur_notes[-1].clear_links
+        cur_notes[-1].links.clear
       end
       
       post_remainder = seg.last - cur_offset

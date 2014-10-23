@@ -25,12 +25,11 @@ class Instruction
   end
   
   class Start < Instruction
-    attr_reader :pitch, :attack_time, :attack_height, :sustain_height
-    def initialize offset, pitch, attack_time, attack_height, sustain_height
+    attr_reader :pitch, :attack_loudness, :attack_duration
+    def initialize offset, pitch, attack_loudness, attack_duration
       @pitch = pitch
-      @attack_time = attack_time
-      @attack_height = attack_height
-      @sustain_height = sustain_height
+      @attack_loudness = attack_loudness
+      @attack_duration = attack_duration
       super(offset)
     end
   end
@@ -46,14 +45,13 @@ class Instruction
   class Restart < Start; end
   
   class Release < Instruction
-    attr_reader :release_time
-    def initialize offset, release_time
-      @release_time = release_time
+    attr_reader :release_duration
+    def initialize offset, release_duration
+      @release_duration = release_duration
       super(offset)
     end
   end
 
-  # Stores information needed to end a note.
   class Stop < Instruction
     def initialize offset
       super(offset)

@@ -7,7 +7,6 @@ module Performance
 class PiecewiseFunction
   attr_reader :pieces
   
-  
   # Take an array of points (each point is a two-element array pair) and
   # create a piecewise function to calculate values in-between.
   def initialize points = []
@@ -30,7 +29,7 @@ class PiecewiseFunction
     domain = prev_point[0]..point[0]
     func = lambda do |x|
       perc = (x - domain.min).to_f / (domain.max - domain.min)
-      y = linear_interpolation prev_point[1], point[1], perc
+      y = Interpolation.linear prev_point[1], point[1], perc
       return y
     end
     add_piece(domain, func)
