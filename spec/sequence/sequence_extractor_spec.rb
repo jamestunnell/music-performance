@@ -121,6 +121,19 @@ describe SequenceExtractor do
       end      
     end
     
-    # TODO: more tests!
+    context 'array with one note, multiple pitches' do
+      before :all do
+        @note = Note.quarter([C5,D5,E5])
+        @seqs = SequenceExtractor.new([@note]).extract_sequences
+      end
+      
+      it 'should return array with as many sequences as pitches' do
+        @seqs.size.should eq @note.pitches.size
+      end
+      
+      it 'should start the sequences at 0' do
+        @seqs.each {|s| s.start.should eq(0) }
+      end
+    end
   end
 end
