@@ -135,6 +135,10 @@ describe SequenceExtractor do
       it 'should start the sequences at 0' do
         @seqs.each {|s| s.start.should eq(0) }
       end
+
+      it 'should end each sequence at or before note duration' do
+        @seqs.each {|s| s.stop.should be <= @note.duration }
+      end
       
       it 'should put one pitch in each seq' do
         @seqs.each {|s| s.pitches.size.should eq(1) }
@@ -143,6 +147,26 @@ describe SequenceExtractor do
       it 'should assign a different pitch to each' do
         note_pitches = @note.pitches.sort
         @seqs.map {|seq| seq.pitches[0] }.sort.should eq note_pitches
+      end
+    end
+
+    context 'array with multiple notes and links' do
+      before :all do
+        @notes = [ Note.quarter([C3,E3], links: {
+          C3 => Link::Slur.new(D3), E3 => Link::Legato.new(F3)}),
+          Note.eighth([D3,F3]) ]
+        @seqs = SequenceExtractor.new(@notes).extract_sequences
+      end
+
+      it 'should create a sequence for linked notes' do
+        @seqs.size.should eq(2)
+      end
+
+      it 'should add pitch at 0 from first note' do
+        @seqs[0].pitches.should have_key(0)
+        @notes[0].pitches.should include(@seqs[0].pitches[0])
+        @seqs[1].pitches.should have_key(0)
+        @notes[0].pitches.should include(@seqs[1].pitches[0])
       end
     end
   end
