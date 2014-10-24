@@ -1,3 +1,4 @@
+
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe SequenceExtractor do
@@ -9,7 +10,7 @@ describe SequenceExtractor do
       notes[0].transpose!(1)
       extr.notes[0].should_not eq(notes[0])
     end
-  
+    
     it 'should maintain the same number of notes' do
       extr = SequenceExtractor.new(
         [ Note.quarter, Note.half, Note.half ])
@@ -74,7 +75,7 @@ describe SequenceExtractor do
         seqs.should be_empty
       end
     end
-  
+    
     context 'array of only rest notes' do
       it 'should return empty' do
         notes = [ Note::quarter, Note::quarter ]
@@ -118,7 +119,7 @@ describe SequenceExtractor do
       
       it 'should stop offset <= combined duration of the two notes' do
         @seqs[0].stop.should be <= (@notes[0].duration + @notes[1].duration)
-      end      
+      end
     end
     
     context 'array with one note, multiple pitches' do
@@ -133,6 +134,15 @@ describe SequenceExtractor do
       
       it 'should start the sequences at 0' do
         @seqs.each {|s| s.start.should eq(0) }
+      end
+      
+      it 'should put one pitch in each seq' do
+        @seqs.each {|s| s.pitches.size.should eq(1) }
+      end
+      
+      it 'should assign a different pitch to each' do
+        note_pitches = @note.pitches.sort
+        @seqs.map {|seq| seq.pitches[0] }.sort.should eq note_pitches
       end
     end
   end
