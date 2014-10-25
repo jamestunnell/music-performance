@@ -169,5 +169,44 @@ describe SequenceExtractor do
         @notes[0].pitches.should include(@seqs[1].pitches[0])
       end
     end
+
+    context 'single note with single pitch, and glissando up' do
+      before :all do
+        @note = Note.whole([D3], links: { D3 => Link::Glissando.new(G3) })
+        @seqs = SequenceExtractor.new([@note]).extract_sequences
+      end
+      
+      it 'should produce one sequence' do
+        @seqs.size.should eq(1)
+      end
+
+      it 'should include pitches up to target pitch' do
+        @seqs[0].pitches.values.should include(D3,Eb3,E3,F3,Gb3)
+      end
+
+      it 'should produce sequence with duration <= note duration' do
+        @seqs[0].duration.should be <= @note.duration
+      end
+    end
+
+    context 'two notes with single pitch, glissando link to pitch in second note' do
+      before :all do
+        @notes = [Note.whole([D3], links: { D3 => Link::Glissando.new(G3) }),
+                  Note.quarter([G3]) ]
+        @seqs = SequenceExtractor.new(@notes).extract_sequences
+      end
+
+      it 'should produce a single sequence' do
+        @seqs.size.should eq(1)
+      end
+
+      it 'should includes pitches up through target pitch' do
+        @seqs[0].pitches.values.should include(D3,Eb3,E3,F3,Gb3,G3)
+      end
+
+      it 'should produce sequence with duration <= note1dur + note2dur' do
+        @seqs[0].duration.should be <= (@notes[0].duration + @notes[1].duration)
+      end
+    end
   end
 end

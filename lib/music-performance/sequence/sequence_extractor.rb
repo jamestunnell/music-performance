@@ -40,6 +40,21 @@ class SequenceExtractor
     end
   end
 
+  def self.glissando_to_elements start_pitch, target_pitch, duration, accented
+    tot_semitones = ((start_pitch.total_semitone)...(target_pitch.total_semitone)).to_a
+    pitches = tot_semitones.map do |ts|
+      Music::Transcription::Pitch.from_semitones(ts)
+    end
+    subdur = Rational(duration,pitches.size)
+    pitches.map do |pitch|
+      LegatoElement.new(subdur, pitch, accented)
+    end
+  end
+
+  def self.portamento_to_elements start_pitch, target_pitch, duration, accented
+    []
+  end
+
   attr_reader :notes
   def initialize notes
     @notes = notes.map {|n| n.clone }
@@ -74,9 +89,9 @@ class SequenceExtractor
           when Music::Transcription::Link::Legato
             elements.push(LegatoElement.new(dur, pitch, accented))
           when Music::Transcription::Link::Glissando
-            elements += self.glissando_note_to_legato_elements note
+            elements += SequenceExtractor.glissando_to_elements(pitch, link.target_pitch, dur, accented)
           when Music::Transcription::Link::Portamento
-            elements += self.portamento_note_to_slurred_elements note
+            elements += SequenceExtractor.portamento_to_elements(pitch, link.target_pitch, dur, accented)
           else
             elements.push(FinalElement.new(dur, pitch, accented, note.articulation))
             break
