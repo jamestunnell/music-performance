@@ -2,6 +2,7 @@ require 'music-transcription'
 
 require 'music-performance/version'
 
+require 'music-performance/model/attacks'
 require 'music-performance/model/sequence'
 
 require 'music-performance/util/interpolation'

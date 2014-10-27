@@ -87,7 +87,7 @@ class SequenceExtractor
           break if j >= @notes.size || !@notes[j].pitches.include?(link.target_pitch)
         end
 
-        sequences.push(Sequence.new(offset,elements))
+        sequences.push(Sequence.from_elements(offset,elements))
       end
       offset += @notes[i].duration
     end
