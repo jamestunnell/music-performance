@@ -10,13 +10,13 @@ describe SequenceExtractor do
       notes[0].transpose!(1)
       extr.notes[0].should_not eq(notes[0])
     end
-    
+
     it 'should maintain the same number of notes' do
       extr = SequenceExtractor.new(
         [ Note.quarter, Note.half, Note.half ])
       extr.notes.size.should eq 3
     end
-    
+
     it 'should remove any bad ties (tying pitch does not exist in next note' do
       extr = SequenceExtractor.new(
         [ Note.quarter([C4,E4], links: {C4 => Link::Tie.new}),
@@ -24,7 +24,7 @@ describe SequenceExtractor do
       )
       extr.notes[0].links.should_not have_key(C4)
     end
-    
+
     it 'should replace any good ties with slurs' do
       extr = SequenceExtractor.new(
         [ Note.quarter([C4,E4], links: {C4 => Link::Tie.new, E4 => Link::Tie.new}),
@@ -33,7 +33,7 @@ describe SequenceExtractor do
       extr.notes[0].links[C4].should be_a Link::Slur
       extr.notes[0].links[E4].should be_a Link::Slur
     end
-    
+
     it 'should remove dead slur/legato (where target pitch is non-existent)' do
       extr = SequenceExtractor.new(
         [ Note.quarter([C4,E4], links: { C4 => Link::Slur.new(D4), E4 => Link::Legato.new(F4) }),
@@ -41,7 +41,7 @@ describe SequenceExtractor do
       )
       extr.notes[0].links.should be_empty
     end
-    
+
     it 'should remove any link where the source pitch is missing' do
       extr = SequenceExtractor.new(
         [ Note.quarter([C4,D4,E4,F4,G4], links: {
@@ -53,7 +53,7 @@ describe SequenceExtractor do
       ])
       extr.notes[0].links.should be_empty
     end
-    
+
     it 'should not remove portamento and glissando with non-existent target pitches' do
       extr = SequenceExtractor.new(
         [ Note.quarter([C4,D4]),
@@ -67,7 +67,7 @@ describe SequenceExtractor do
       extr.notes[-1].links.should have_key(G4)
     end
   end
-  
+
   describe '#extract_sequences' do
     context 'empty note array' do
       it 'should return empty' do
@@ -75,7 +75,7 @@ describe SequenceExtractor do
         seqs.should be_empty
       end
     end
-    
+
     context 'array of only rest notes' do
       it 'should return empty' do
         notes = [ Note::quarter, Note::quarter ]
@@ -83,55 +83,55 @@ describe SequenceExtractor do
         seqs.should be_empty
       end
     end
-    
+
     context 'array with only one note, single pitch' do
       before :all do
         @note = Note::quarter([C5])
         @seqs = SequenceExtractor.new([@note]).extract_sequences
       end
-      
+
       it 'should return array with one sequence' do
         @seqs.size.should eq 1
       end
-      
+
       it 'should start offset 0' do
         @seqs[0].start.should eq 0
       end
-      
+
       it 'should stop offset <= note duration' do
         @seqs[0].stop.should be <= @note.duration
       end
     end
-    
+
     context 'array with two slurred notes, single pitch' do
       before :all do
         @notes = [ Note.quarter([C5], articulation: SLUR), Note.quarter([D5]) ]
         @seqs = SequenceExtractor.new(@notes).extract_sequences
       end
-      
+
       it 'should return array with one sequence' do
         @seqs.size.should eq 1
       end
-      
+
       it 'should start offset 0' do
         @seqs[0].start.should eq 0
       end
-      
+
       it 'should stop offset <= combined duration of the two notes' do
         @seqs[0].stop.should be <= (@notes[0].duration + @notes[1].duration)
       end
     end
-    
+
     context 'array with one note, multiple pitches' do
       before :all do
         @note = Note.quarter([C5,D5,E5])
         @seqs = SequenceExtractor.new([@note]).extract_sequences
       end
-      
+
       it 'should return array with as many sequences as pitches' do
         @seqs.size.should eq @note.pitches.size
       end
-      
+
       it 'should start the sequences at 0' do
         @seqs.each {|s| s.start.should eq(0) }
       end
@@ -139,14 +139,13 @@ describe SequenceExtractor do
       it 'should end each sequence at or before note duration' do
         @seqs.each {|s| s.stop.should be <= @note.duration }
       end
-      
+
       it 'should put one pitch in each seq' do
         @seqs.each {|s| s.pitches.size.should eq(1) }
       end
-      
+
       it 'should assign a different pitch to each' do
-        note_pitches = @note.pitches.sort
-        @seqs.map {|seq| seq.pitches[0] }.sort.should eq note_pitches
+        @seqs.map {|seq| seq.pitches[0] }.sort.should eq @note.pitches.sort
       end
     end
 
@@ -175,12 +174,12 @@ describe SequenceExtractor do
         @note = Note.whole([D3], links: { D3 => Link::Glissando.new(G3) })
         @seqs = SequenceExtractor.new([@note]).extract_sequences
       end
-      
+
       it 'should produce one sequence' do
         @seqs.size.should eq(1)
       end
 
-      it 'should include pitches up to target pitch' do
+      it 'should include pitches up to (not including) target pitch' do
         @seqs[0].pitches.values.should include(D3,Eb3,E3,F3,Gb3)
       end
 
@@ -189,7 +188,26 @@ describe SequenceExtractor do
       end
     end
 
-    context 'two notes with single pitch, glissando link to pitch in second note' do
+    context 'single note with single pitch, and glissando down' do
+      before :all do
+        @note = Note.whole([D3], links: { D3 => Link::Glissando.new(A2) })
+        @seqs = SequenceExtractor.new([@note]).extract_sequences
+      end
+
+      it 'should produce one sequence' do
+        @seqs.size.should eq(1)
+      end
+
+      it 'should include pitches down to (not including) target pitch' do
+        @seqs[0].pitches.values.should include(D3,Db3,C3,B2,Bb2)
+      end
+
+      it 'should produce sequence with duration <= note duration' do
+        @seqs[0].duration.should be <= @note.duration
+      end
+    end
+
+    context 'two notes with single pitch, glissando up to pitch in second note' do
       before :all do
         @notes = [Note.whole([D3], links: { D3 => Link::Glissando.new(G3) }),
                   Note.quarter([G3]) ]

@@ -14,5 +14,7 @@ require 'music-performance/util/note_linker'
 require 'music-performance/sequence/attack'
 require 'music-performance/sequence/sequence'
 require 'music-performance/sequence/sequence_elements'
+require 'music-performance/sequence/glissando_converter'
+require 'music-performance/sequence/portamento_converter'
 require 'music-performance/sequence/sequence_extractor'
 

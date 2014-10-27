@@ -28,7 +28,7 @@ class SequenceExtractor
       end
     end
   end
-  
+
   def self.replace_articulation note, next_note
     case note.articulation
     when Music::Transcription::Articulations::SLUR
@@ -40,25 +40,11 @@ class SequenceExtractor
     end
   end
 
-  def self.glissando_to_elements start_pitch, target_pitch, duration, accented
-    tot_semitones = ((start_pitch.total_semitone)...(target_pitch.total_semitone)).to_a
-    pitches = tot_semitones.map do |ts|
-      Music::Transcription::Pitch.from_semitones(ts)
-    end
-    subdur = Rational(duration,pitches.size)
-    pitches.map do |pitch|
-      LegatoElement.new(subdur, pitch, accented)
-    end
-  end
-
-  def self.portamento_to_elements start_pitch, target_pitch, duration, accented
-    []
-  end
-
   attr_reader :notes
-  def initialize notes
+  def initialize notes, cents_per_step = 10
+    @cents_per_step = cents_per_step
     @notes = notes.map {|n| n.clone }
-    
+
     @notes.push Note.quarter
     (@notes.size-1).times do |i|
       SequenceExtractor.fixup_links(@notes[i], @notes[i+1])
@@ -66,15 +52,15 @@ class SequenceExtractor
     end
     @notes.pop
   end
-  
+
   def extract_sequences
     sequences = []
     offset = 0
-    
+
     @notes.each_index do |i|
       while @notes[i].pitches.any?
         elements = []
-        
+
         j = i
         loop do
           note = @notes[j]
@@ -82,30 +68,30 @@ class SequenceExtractor
           dur = note.duration
           accented = note.accented
           link = note.links[pitch]
-          
+
           case link
           when Music::Transcription::Link::Slur
             elements.push(SlurredElement.new(dur, pitch, accented))
           when Music::Transcription::Link::Legato
             elements.push(LegatoElement.new(dur, pitch, accented))
           when Music::Transcription::Link::Glissando
-            elements += SequenceExtractor.glissando_to_elements(pitch, link.target_pitch, dur, accented)
+            elements += GlissandoConverter.glissando_elements(pitch, link.target_pitch, dur, accented)
           when Music::Transcription::Link::Portamento
-            elements += SequenceExtractor.portamento_to_elements(pitch, link.target_pitch, dur, accented)
+            elements += PortamentoConverter.portamento_elements(pitch, link.target_pitch, @cents_per_step, dur, accented)
           else
             elements.push(FinalElement.new(dur, pitch, accented, note.articulation))
             break
           end
-          
+
           j += 1
           break if j >= @notes.size || !@notes[j].pitches.include?(link.target_pitch)
         end
-        
+
         sequences.push(Sequence.new(offset,elements))
       end
       offset += @notes[i].duration
     end
-    
+
     return sequences
   end
 end
