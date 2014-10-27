@@ -79,7 +79,11 @@ class Sequence
     pitches = {}
     attacks = {}
     start = offset
-
+    
+    if elements.empty?
+      raise ArgumentError, "no elements given"
+    end
+      
     last = elements.last
     skip_attack = false
     elements.each do |el|
@@ -87,11 +91,9 @@ class Sequence
       unless skip_attack
         attacks[offset] = el.accented ? ACCENTED : UNACCENTED
       end
-
-      if el.slurred?
-        skip_attack = true
-      end
-
+      
+      skip_attack = el.slurred?
+      
       unless el.equal?(last)
         offset += el.duration
       end

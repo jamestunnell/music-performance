@@ -2,9 +2,6 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe Sequence do
   describe '#initialize' do
-    before :all do
-    end
-    
     it 'should assign given start, stop, pitches and attacks' do
       start, stop = 15, 22
       pitches = { 15 => F2, 16 => G2, 16.1 => Ab2, 21.99 => C2 }
@@ -64,6 +61,76 @@ describe Sequence do
       expect do
         Sequence.new(20,21, { 20 => C4 }, { 20 => UNACCENTED, 19.99 => ACCENTED })
       end.to raise_error(ArgumentError)
+    end
+  end
+  
+  describe '.from_elements' do
+    it 'should raise ArgumentError if no elements are given' do
+      expect { Sequence.from_elements(2,[]) }.to raise_error(ArgumentError)
+    end
+    
+    context 'single element' do
+      before :all do
+        @offset = 0
+        @el = FinalElement.new(2, C2, true, NORMAL)
+        @seq = Sequence.from_elements(@offset, [ @el ])
+        
+      end
+      
+      it 'should return a Sequence' do
+        @seq.should be_a Sequence
+      end
+      
+      it 'should set start offset to given offset' do
+        @seq.start.should eq(@offset)
+      end
+      
+      it 'should set stop offset no more than "duration of first element" away from start' do
+        (@seq.stop - @seq.start).should be <= @el.duration
+      end
+      
+      it 'should set start pitch according to element pitch' do
+        @seq.pitches[@seq.start].should eq(@el.pitch)
+      end
+      
+      it 'should set start attack according to element.accented' do
+        @seq.attacks[@seq.start].accented?.should eq(@el.accented)
+      end
+    end
+    
+    context 'multi-element' do
+      before :all do
+        @offset = 1.5
+        @els = [
+          SlurredElement.new(1.0, A2, false),
+          LegatoElement.new(1.1, B2, false),
+          SlurredElement.new(1.2, C2, false),
+          LegatoElement.new(1.3, B2, false),
+          FinalElement.new(1.4, A2, false, NORMAL)
+        ]
+        @seq = Sequence.from_elements(@offset, @els)
+      end
+      
+      it 'should place pitches according to element duration' do
+        offset = @offset
+        @els.each do |el|
+          @seq.pitches.should have_key(offset)
+          @seq.pitches[offset].should eq(el.pitch)
+          offset += el.duration
+        end
+      end
+      
+      it 'should place attacks at beginning and following non-slur elements' do
+        @seq.attacks.should have_key(@offset)
+        
+        offset = @offset + @els.first.duration
+        (1...@els.size).each do |i|
+          unless @els[i-1].slurred?
+            @seq.attacks.should have_key(offset)
+          end
+          offset += @els[i].duration
+        end
+      end
     end
   end
 end
