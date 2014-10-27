@@ -66,4 +66,28 @@ describe GlissandoConverter do
       end
     end
   end
+  
+  describe '.glissando_elements' do
+    before :all do
+      @dur = Rational(3,2)
+      @acc = false
+      @els = GlissandoConverter.glissando_elements(C4,A4,@dur,@acc)
+    end
+    
+    it 'should return an array of LegatoElement objects' do
+      @els.each {|el| el.should be_a LegatoElement }
+    end
+    
+    it 'should split up duration among elements' do
+      sum = @els.map {|el| el.duration }.inject(0,:+)
+      sum.should eq(@dur)
+    end
+    
+    it 'should set accented as given' do
+      els = GlissandoConverter.glissando_elements(C4,A4,1,false)
+      els.each {|el| el.accented.should eq(false) }
+      els = GlissandoConverter.glissando_elements(C4,A4,1,true)
+      els.each {|el| el.accented.should eq(true) }
+    end
+  end
 end

@@ -63,5 +63,29 @@ describe PortamentoConverter do
         end
       end
     end
-  end  
+  end
+  
+  describe '.portamento_elements' do
+    before :all do
+      @dur = Rational(3,2)
+      @acc = false
+      @els = PortamentoConverter.portamento_elements(C4,F4,25,@dur,@acc)
+    end
+    
+    it 'should return an array of SlurredElement objects' do
+      @els.each {|el| el.should be_a SlurredElement }
+    end
+    
+    it 'should split up duration among elements' do
+      sum = @els.map {|el| el.duration }.inject(0,:+)
+      sum.should eq(@dur)
+    end
+    
+    it 'should set accented as given' do
+      els = PortamentoConverter.portamento_elements(C4,D4,10,1,false)
+      els.each {|el| el.accented.should eq(false) }
+      els = PortamentoConverter.portamento_elements(C4,D4,10,1,true)
+      els.each {|el| el.accented.should eq(true) }
+    end
+  end
 end
