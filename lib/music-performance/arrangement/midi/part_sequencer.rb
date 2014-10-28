@@ -5,6 +5,7 @@ class PartSequencer
   def initialize part, cents_per_step = 10
     extractor = NoteSequenceExtractor.new(part.notes, cents_per_step)
     note_sequences = extractor.extract_sequences
+    @start_volume = MidiUtil.dynamic_to_volume(part.start_dynamic)
     
     @note_events = {}
     note_sequences.each do |note_seq|
@@ -73,6 +74,7 @@ class PartSequencer
     
     # Add a volume controller event (optional).
     track.events << MIDI::Controller.new(channel, MIDI::CC_VOLUME, 127)
+    track.events << MIDI::Controller.new(channel, MIDI::CC_EXPRESSION_CONTROLLER, @start_volume)
     
     # Change to particular instrument sound
     track.events << MIDI::ProgramChange.new(channel, 1, 0)

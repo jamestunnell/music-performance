@@ -24,6 +24,10 @@ class MidiUtil
   def self.pitch_to_notenum pitch
     MIDI_NOTENUMS[pitch.round]
   end
+  
+  def self.dynamic_to_volume dynamic
+    (dynamic * 127).round
+  end
 end
 
 end
