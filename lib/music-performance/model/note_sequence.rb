@@ -18,7 +18,7 @@ FinalElement = Struct.new(:duration, :pitch, :accented, :articulation) do
   def accented?; accented; end
 end
 
-class Sequence
+class NoteSequence
   def self.adjust_duration duration, articulation
     x = duration
     y = Math.log2(x)
@@ -98,7 +98,7 @@ class Sequence
         offset += el.duration
       end
     end
-    stop = offset + Sequence.adjust_duration(last.duration, last.articulation)
+    stop = offset + NoteSequence.adjust_duration(last.duration, last.articulation)
     
     new(start, stop, pitches, attacks)
   end

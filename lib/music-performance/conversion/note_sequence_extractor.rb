@@ -1,7 +1,7 @@
 module Music
 module Performance
 
-class SequenceExtractor
+class NoteSequenceExtractor
   # For all link types:
   #  - Remove link where source pitch is not in current note
   # For tie:
@@ -45,10 +45,10 @@ class SequenceExtractor
     @cents_per_step = cents_per_step
     @notes = notes.map {|n| n.clone }
 
-    @notes.push Note.quarter
+    @notes.push Music::Transcription::Note.quarter
     (@notes.size-1).times do |i|
-      SequenceExtractor.fixup_links(@notes[i], @notes[i+1])
-      SequenceExtractor.replace_articulation(@notes[i], @notes[i+1])
+      NoteSequenceExtractor.fixup_links(@notes[i], @notes[i+1])
+      NoteSequenceExtractor.replace_articulation(@notes[i], @notes[i+1])
     end
     @notes.pop
   end
@@ -87,7 +87,7 @@ class SequenceExtractor
           break if j >= @notes.size || !@notes[j].pitches.include?(link.target_pitch)
         end
 
-        sequences.push(Sequence.from_elements(offset,elements))
+        sequences.push(NoteSequence.from_elements(offset,elements))
       end
       offset += @notes[i].duration
     end

@@ -14,19 +14,18 @@ class ScoreCollator
   end
   
   def collate_parts
-    new_parts = {}
     segments = @score.program.segments
     
-    # figure parts (note sequences & dynamics)
-    @score.parts.each do |name, part|
-      new_dcs = collate_changes(part.start_dynamic,
-        part.dynamic_changes, segments)
-      new_notes = collate_notes(part.notes, segments)
-      new_parts[name] = Music::Transcription::Part.new(part.start_dynamic,
-        dynamic_changes: new_dcs, notes: new_notes)
-    end
-    
-    return new_parts
+    Hash[
+      @score.parts.map do |name, part|
+	new_dcs = collate_changes(part.start_dynamic,
+	  part.dynamic_changes, segments)
+	new_notes = collate_notes(part.notes, segments)
+	new_part = Music::Transcription::Part.new(part.start_dynamic,
+	  dynamic_changes: new_dcs, notes: new_notes)
+	[ name, new_part ]
+      end
+    ]
   end
   
   def collate_tempo_changes
@@ -86,7 +85,7 @@ class ScoreCollator
       
       pre_remainder = cur_offset - seg.first
       if pre_remainder > 0
-        cur_notes << Note.new(pre_remainder)
+        cur_notes << Music::Transcription::Note.new(pre_remainder)
       end
       
       # found some notes to add...
@@ -109,7 +108,7 @@ class ScoreCollator
       
       post_remainder = seg.last - cur_offset
       if post_remainder > 0
-        cur_notes << Note.new(post_remainder)
+        cur_notes << Music::Transcription::Note.new(post_remainder)
       end
         
       new_notes.concat cur_notes

@@ -29,4 +29,5 @@ DESCRIPTION
   
   gem.add_dependency 'music-transcription', '~> 0.17.0'
   gem.add_dependency 'midilib', '~> 2.0'
+  gem.add_dependency 'docopt'
 end

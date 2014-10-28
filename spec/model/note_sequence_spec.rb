@@ -1,12 +1,12 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-describe Sequence do
+describe NoteSequence do
   describe '#initialize' do
     it 'should assign given start, stop, pitches and attacks' do
       start, stop = 15, 22
       pitches = { 15 => F2, 16 => G2, 16.1 => Ab2, 21.99 => C2 }
       attacks = { 15 => ACCENTED, 17 => UNACCENTED, 18 => ACCENTED }
-      seq = Sequence.new(start,stop,pitches,attacks)
+      seq = NoteSequence.new(start,stop,pitches,attacks)
       seq.start.should eq(start)
       seq.stop.should eq(stop)
       seq.pitches.should eq(pitches)
@@ -15,70 +15,70 @@ describe Sequence do
     
     it 'should raise ArgumentError if start offset >= stop offset' do
       expect do
-        Sequence.new(20,19, { 20 => C4 }, { 20 => UNACCENTED })
+        NoteSequence.new(20,19, { 20 => C4 }, { 20 => UNACCENTED })
       end.to raise_error(ArgumentError)
     end
     
     it 'should raise ArgumentError if no pitches are given' do
       expect do
-        Sequence.new(20,21, {}, { 20 => UNACCENTED })
+        NoteSequence.new(20,21, {}, { 20 => UNACCENTED })
       end.to raise_error(ArgumentError)
     end
     
     it 'should raise ArgumentError if no attacks are given' do
       expect do
-        Sequence.new(20,21, { 20 => C4 }, {})
+        NoteSequence.new(20,21, { 20 => C4 }, {})
       end.to raise_error(ArgumentError)
     end
     
     it 'should raise ArgumentError if no start pitch is given' do
       expect do
-        Sequence.new(20,21, { 20.1 => C4 }, { 20 => UNACCENTED })
+        NoteSequence.new(20,21, { 20.1 => C4 }, { 20 => UNACCENTED })
       end.to raise_error(ArgumentError)
     end
     
     it 'should raise ArgumentError if no start attack is given' do
       expect do
-        Sequence.new(20,21, { 20 => C4 }, { 20.1 => UNACCENTED })
+        NoteSequence.new(20,21, { 20 => C4 }, { 20.1 => UNACCENTED })
       end.to raise_error(ArgumentError)
     end
     
     it 'should raise ArgumentError if any pitch offset is not between start..stop' do
       expect do
-        Sequence.new(20,21, { 20 => C4, 21.01 => D4 }, { 20 => UNACCENTED })
+        NoteSequence.new(20,21, { 20 => C4, 21.01 => D4 }, { 20 => UNACCENTED })
       end.to raise_error(ArgumentError)
       
       expect do
-        Sequence.new(20,21, { 20 => C4, 19.99 => D4 }, { 20 => UNACCENTED })
+        NoteSequence.new(20,21, { 20 => C4, 19.99 => D4 }, { 20 => UNACCENTED })
       end.to raise_error(ArgumentError)
     end
     
     it 'should raise ArgumentError if any attack offset is not between start..stop' do
       expect do
-        Sequence.new(20,21, { 20 => C4 }, { 20 => UNACCENTED, 21.01 => ACCENTED })
+        NoteSequence.new(20,21, { 20 => C4 }, { 20 => UNACCENTED, 21.01 => ACCENTED })
       end.to raise_error(ArgumentError)
       
       expect do
-        Sequence.new(20,21, { 20 => C4 }, { 20 => UNACCENTED, 19.99 => ACCENTED })
+        NoteSequence.new(20,21, { 20 => C4 }, { 20 => UNACCENTED, 19.99 => ACCENTED })
       end.to raise_error(ArgumentError)
     end
   end
   
   describe '.from_elements' do
     it 'should raise ArgumentError if no elements are given' do
-      expect { Sequence.from_elements(2,[]) }.to raise_error(ArgumentError)
+      expect { NoteSequence.from_elements(2,[]) }.to raise_error(ArgumentError)
     end
     
     context 'single element' do
       before :all do
         @offset = 0
         @el = FinalElement.new(2, C2, true, NORMAL)
-        @seq = Sequence.from_elements(@offset, [ @el ])
+        @seq = NoteSequence.from_elements(@offset, [ @el ])
         
       end
       
-      it 'should return a Sequence' do
-        @seq.should be_a Sequence
+      it 'should return a NoteSequence' do
+        @seq.should be_a NoteSequence
       end
       
       it 'should set start offset to given offset' do
@@ -108,7 +108,7 @@ describe Sequence do
           LegatoElement.new(1.3, B2, false),
           FinalElement.new(1.4, A2, false, NORMAL)
         ]
-        @seq = Sequence.from_elements(@offset, @els)
+        @seq = NoteSequence.from_elements(@offset, @els)
       end
       
       it 'should place pitches according to element duration' do
