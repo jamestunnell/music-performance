@@ -87,11 +87,14 @@ class NoteSequence
     last = elements.last
     skip_attack = false
     elements.each do |el|
-      pitches[offset] = el.pitch
-      unless skip_attack
-        attacks[offset] = el.accented ? ACCENTED : UNACCENTED
-      end
-      
+      if skip_attack
+        unless pitches.max[1] == el.pitch
+          pitches[offset] = el.pitch
+        end
+      else
+        pitches[offset] = el.pitch
+        attacks[offset] = el.accented ? ACCENTED : UNACCENTED        
+      end      
       skip_attack = el.slurred?
       
       unless el.equal?(last)

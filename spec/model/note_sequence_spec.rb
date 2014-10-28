@@ -132,5 +132,16 @@ describe NoteSequence do
         end
       end
     end
+    
+    context 'elements contain slur to same pitch' do
+      it 'should not add same pitch nor attack for second element' do
+        els = [ SlurredElement.new(1, C4, false), FinalElement.new(1, C4, false, NORMAL) ]
+        seq = NoteSequence.from_elements(0, els)
+        seq.pitches.should have_key(0)
+        seq.pitches.should_not have_key(1)
+        seq.attacks.should have_key(0)
+        seq.attacks.should_not have_key(1)
+      end
+    end
   end
 end
