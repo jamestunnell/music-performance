@@ -104,7 +104,7 @@ class PartSequencer
     track = MIDI::Track.new(midi_sequence)
     
     # Name the track and instrument
-    track.name = part_name
+    track.name = part_name.to_s
     track.instrument = MIDI::GM_PATCH_NAMES[0]
     
     # Add a volume controller event (optional).
