@@ -26,7 +26,8 @@ class PartSequencer
       
       track.events << case event
       when NoteOnEvent
-        MIDI::NoteOn.new(channel, event.notenum, 127, delta)
+        vel = MidiUtil.note_velocity(event.accented)
+        MIDI::NoteOn.new(channel, event.notenum, vel, delta)
       when NoteOffEvent
         MIDI::NoteOff.new(channel, event.notenum, 127, delta)
       when VolumeExpressionEvent

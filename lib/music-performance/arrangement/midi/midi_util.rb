@@ -28,6 +28,10 @@ class MidiUtil
   def self.dynamic_to_volume dynamic
     (dynamic * 127).round
   end
+  
+  def self.note_velocity(accented)
+    accented ? 112 : 70
+  end
 end
 
 end
