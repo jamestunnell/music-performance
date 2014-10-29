@@ -71,7 +71,6 @@ class PiecewiseFunction
     else
       delete_completely = @pieces.select { |d,f| domain.include?(d.begin) && domain.include?(d.end) }
       delete_completely.each do |d,f|
-        binding.pry
         @pieces.delete d
       end
       

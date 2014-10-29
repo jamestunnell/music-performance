@@ -30,6 +30,13 @@ class ValueComputer
     @piecewise_function.eval offset
   end
   
+  def sample xmin, xmax, srate
+    sample_period = Rational(1,srate)
+    ((xmin.to_r)..(xmax.to_r)).step(sample_period).map do |x|
+      value_at(x)
+    end
+  end
+  
   # finds the minimum domain value
   def domain_min
     -Float::INFINITY
