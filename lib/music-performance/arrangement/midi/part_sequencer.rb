@@ -10,7 +10,7 @@ class PartSequencer
     dynamic_events = gather_dynamic_events(part.start_dynamic,
       part.dynamic_changes, dynamics_sample_rate)
     
-    @events = (note_events + dynamic_events).sort_by {|x| x[0] }
+    @events = (note_events + dynamic_events).sort
   end
   
   def make_midi_track midi_sequence, part_name, channel, ppqn
@@ -25,12 +25,12 @@ class PartSequencer
       end
       
       track.events << case event
-      when NoteOnEvent
+      when MidiEvent::NoteOn
         vel = MidiUtil.note_velocity(event.accented)
         MIDI::NoteOn.new(channel, event.notenum, vel, delta)
-      when NoteOffEvent
+      when MidiEvent::NoteOff
         MIDI::NoteOff.new(channel, event.notenum, 127, delta)
-      when VolumeExpressionEvent
+      when MidiEvent::Expression
         MIDI::Controller.new(channel, MIDI::CC_EXPRESSION_CONTROLLER, event.volume, delta)
       end
       
@@ -65,8 +65,8 @@ class PartSequencer
         on_at = offset
         off_at = (i < (pitches.size - 1)) ? pitches[i+1][0] : note_seq.stop
         
-        note_events.push [on_at, NoteOnEvent.new(note_num, accented)]
-        note_events.push [off_at, NoteOffEvent.new(note_num)]
+        note_events.push [on_at, MidiEvent::NoteOn.new(note_num, accented)]
+        note_events.push [off_at, MidiEvent::NoteOff.new(note_num)]
       end
     end
     return note_events
@@ -91,7 +91,7 @@ class PartSequencer
       unless sample == prev
         offset = Rational(i,sample_rate)
         volume = MidiUtil.dynamic_to_volume(sample)
-        dynamic_events.push [offset, VolumeExpressionEvent.new(volume)]
+        dynamic_events.push [offset, MidiEvent::Expression.new(volume)]
       end
       prev = sample
     end
