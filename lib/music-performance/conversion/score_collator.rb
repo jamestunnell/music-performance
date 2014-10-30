@@ -102,8 +102,6 @@ class ScoreCollator
           cur_notes[-1].duration -= overshoot
           cur_offset = seg.last
         end
-        
-        cur_notes[-1].links.clear
       end
       
       post_remainder = seg.last - cur_offset

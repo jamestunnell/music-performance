@@ -82,6 +82,24 @@ describe ScoreCollator do
         end
       end
     end
+    
+    it 'should preserve links' do
+      notes = Parsing::notes("1Db4~Bb4")
+      score = Score.new(
+        FOUR_FOUR,120,
+        parts: { "lead" => Part.new(Dynamics::MP, notes: notes) },
+        program: Program.new([0..1,0..1]),
+      )
+      collator = ScoreCollator.new(score)
+      parts = collator.collate_parts
+      
+      notes = parts["lead"].notes
+      notes.size.should eq 2
+      notes.each do |note|
+        note.links.should have_key(Db4)
+        note.links[Db4].should be_a Link::Glissando
+      end
+    end
   end
   
   describe '#collate_tempo_changes' do

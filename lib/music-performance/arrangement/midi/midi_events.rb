@@ -28,7 +28,7 @@ class MidiEvent
   end
   
   ORDERING = {
-    NoteOffEvent => 0, VolumeExpressionEvent => 1, NoteOnEvent => 2
+    NoteOff => 0, Expression => 1, NoteOn => 2
   }
 end
 
