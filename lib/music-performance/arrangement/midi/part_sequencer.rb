@@ -3,6 +3,8 @@ module Performance
 
 class PartSequencer
   def initialize part, dynamics_sample_rate: 50, cents_per_step: 10
+    replace_portamento_with_glissando(part.notes)
+    
     extractor = NoteSequenceExtractor.new(part.notes, cents_per_step)
     note_sequences = extractor.extract_sequences
     note_events = gather_note_events(note_sequences)
@@ -41,13 +43,15 @@ class PartSequencer
   
   private
   
-  #def add_event events_hash, offset, event
-  #  if events_hash.has_key? offset
-  #    events_hash[offset].push event
-  #  else
-  #    events_hash[offset] = [ event ]
-  #  end
-  #end
+  def replace_portamento_with_glissando notes
+    notes.each do |note|
+      note.links.each do |pitch,link|
+        if link.is_a? Music::Transcription::Link::Portamento
+          note.links[pitch] = Music::Transcription::Link::Glissando.new(link.target_pitch)
+        end
+      end
+    end
+  end
   
   def gather_note_events note_sequences
     note_events = []
