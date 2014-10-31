@@ -6,11 +6,17 @@ doc = <<DOCOPT
 Loads a music-transcription score from YAML file, and converts to MIDI file.
 
 Usage:
-  #{exe_name} <input>
+  #{exe_name} <input> [PART PROGRAM] ...
   #{exe_name} <input> <output>
   #{exe_name} -h | --help
   #{exe_name} --version
 
+Arguments:
+  input A music-transcription score file in YAML format
+  output Midi filename
+  PART name of a part in the score
+  PROGRAM MIDI program (instrument) number for the given part
+  
 Options:
   -h --help     Show this screen.
   --version     Show version.
@@ -42,8 +48,12 @@ File.open(fin_name) do |fin|
   puts "complete"
   
   if score.valid?
+    part_names = args["PART"]
+    program_nums = args["PROGRAM"].map {|str| str.to_i }
+    instr_map = Hash[[part_names,program_nums].transpose]
+    
     print "Making MIDI sequence..."
-    seq = Performance::ScoreSequencer.new(score).make_midi_seq
+    seq = Performance::ScoreSequencer.new(score).make_midi_seq(instr_map)
     puts "complete"  
   
     fout_name = args["<output>"]

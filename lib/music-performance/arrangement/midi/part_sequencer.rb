@@ -15,8 +15,8 @@ class PartSequencer
     @events = (note_events + dynamic_events).sort
   end
   
-  def make_midi_track midi_sequence, part_name, channel, ppqn
-    track = begin_track(midi_sequence, part_name, channel)
+  def make_midi_track midi_sequence, part_name, channel, ppqn, program
+    track = begin_track(midi_sequence, part_name, channel, program)
     
     prev_offset = 0
     @events.each do |offset, event|
@@ -103,19 +103,19 @@ class PartSequencer
     return dynamic_events
   end
 
-  def begin_track midi_sequence, part_name, channel
+  def begin_track midi_sequence, part_name, channel, program
     # Track to hold part notes
     track = MIDI::Track.new(midi_sequence)
     
     # Name the track and instrument
-    track.name = part_name.to_s
+    track.name = part_name
     track.instrument = MIDI::GM_PATCH_NAMES[0]
     
     # Add a volume controller event (optional).
     track.events << MIDI::Controller.new(channel, MIDI::CC_VOLUME, 127)
     
     # Change to particular instrument sound
-    track.events << MIDI::ProgramChange.new(channel, 1, 0)
+    track.events << MIDI::ProgramChange.new(channel, program)
     
     return track
   end

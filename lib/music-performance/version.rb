@@ -2,6 +2,6 @@
 module Music
 module Performance
   # music-performance version
-  VERSION = "0.3.0"
+  VERSION = "0.4.0"
 end
 end
