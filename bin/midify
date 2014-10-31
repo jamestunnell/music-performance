@@ -7,7 +7,7 @@ Loads a music-transcription score from YAML file, and converts to MIDI file.
 
 Usage:
   #{exe_name} <input> [PART PROGRAM] ...
-  #{exe_name} <input> <output>
+  #{exe_name} <input> <output> [PART PROGRAM] ...
   #{exe_name} -h | --help
   #{exe_name} --version
 
